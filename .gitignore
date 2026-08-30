@@ -1,0 +1,17 @@
+# Local diagnostic output
+codex-update-diagnostics*.json
+diagnostics-*.json
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.local.*
+config.json
+
+# Editor and OS state
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini

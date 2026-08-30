@@ -1,0 +1,6 @@
+interface:
+  display_name: "Codex Windows Update Repair"
+  short_description: "Diagnose and repair stuck Codex Windows updates"
+  default_prompt: "Use $codex-windows-update-repair to diagnose why my Codex Windows update is stuck and propose the safest evidence-based recovery."
+policy:
+  allow_implicit_invocation: true
