@@ -1,6 +1,6 @@
 ---
 name: codex-windows-update-repair
-description: Diagnose and repair stuck Codex desktop app updates on Windows when the app repeatedly shows an update, closes without upgrading, Store or winget disagree, or MSIX registration is blocked by running processes. Do not use for ordinary Codex CLI upgrades or unrelated Windows application failures.
+description: Diagnose and repair stuck Windows Codex Desktop updates and perform post-update, pre-start runtime consistency checks. Use for Store/MSIX registration failures or authorized manual updates with relocated runtimes; not ordinary Codex CLI upgrades.
 ---
 
 # Codex Windows Update Repair
@@ -16,6 +16,7 @@ Diagnose the Windows Codex desktop package before changing it, distinguish updat
 5. Run repair only from a standalone Windows Terminal or PowerShell process. Never launch the repair from the Codex integrated terminal or an agent shell whose ancestor is Codex; closing the app would terminate the repair itself.
 6. Prefer registering the highest already-staged Store package over resetting or uninstalling the app. Use `scripts/repair-codex-update.ps1` in preview mode first, then with `-Apply` only after authorization.
 7. Verify the registered package version and status after repair. If the version did not advance, stop and report the exact AppX/Store error. Do not loop, reset, or uninstall automatically.
+8. For updates with configured relocated runtimes, recommend previewing `-SyncBundledRuntime` and, after explicit authorization covering both package registration and runtime/config/environment synchronization, running `-Apply -SyncBundledRuntime`. Keep Codex closed until the static post-update gate passes. Read [references/recovery.md](references/recovery.md) for dependency and standalone synchronization commands. Do not claim Browser/Chrome works until tested after startup in a fresh task.
 
 ## Scenario references
 

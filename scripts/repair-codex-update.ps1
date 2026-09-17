@@ -1,6 +1,8 @@
 [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
 param(
     [switch]$Apply,
+    [switch]$SyncBundledRuntime,
+    [string]$BundledRepairScript,
 
     [ValidateRange(1, 60)]
     [int]$WaitSeconds = 10,
@@ -9,6 +11,14 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+if ([string]::IsNullOrWhiteSpace($BundledRepairScript)) {
+    $BundledRepairScript = Join-Path $PSScriptRoot '..\..\codex-windows-bundled-plugin-repair\scripts\Repair-CodexBundledPlugins.ps1'
+}
+
+if ($SyncBundledRuntime -and -not (Test-Path -LiteralPath $BundledRepairScript -PathType Leaf)) {
+    throw 'Bundled repair dependency missing. Install the sibling skill or supply -BundledRepairScript before updating.'
+}
 
 if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) {
     throw 'This repair supports Windows only.'
@@ -68,6 +78,7 @@ if ($desktopProcesses.Count -gt 0) {
 if (-not $Apply) {
     Write-Host ''
     Write-Host 'Preview only. No processes were stopped and no package registration was changed.'
+    if ($SyncBundledRuntime) { Write-Host 'Plan: register update, inspect without starting CLI, synchronize actionable runtime drift, verify, then start manually.' }
     Write-Host 'Re-run from a standalone PowerShell or Windows Terminal with -Apply to continue.'
     return
 }
@@ -82,7 +93,9 @@ if ($codexAncestor) {
 }
 
 $target = "highest staged package for $PackageFamilyName"
-if (-not $PSCmdlet.ShouldProcess($target, 'Stop the Codex desktop app and register the package')) {
+$operation = 'Stop the Codex desktop app and register the package'
+if ($SyncBundledRuntime) { $operation += '; back up and synchronize mismatched relocated runtimes and related existing config/user environment entries before startup' }
+if (-not $PSCmdlet.ShouldProcess($target, $operation)) {
     return
 }
 
@@ -125,5 +138,8 @@ $advanced = [version]$packageAfter.Version -gt [version]$packageBefore.Version
 if (-not $advanced) {
     Write-Warning 'Registration completed, but the package version did not advance. Do not repeat in a loop; collect diagnostics and inspect the Store/AppX events.'
 } else {
+    if ($SyncBundledRuntime) {
+        & (Join-Path $PSScriptRoot 'sync-bundled-runtime-before-start.ps1') -Apply -BundledRepairScript $BundledRepairScript -ExpectedPackageVersion $packageAfter.Version.ToString()
+    }
     Write-Host 'Codex update registration completed. Start Codex manually and check for any later rollout version.'
 }

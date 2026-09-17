@@ -1,5 +1,16 @@
 # Codex Windows Update Repair
 
+## 更新后、启动前的可选运行时同步
+
+对于已配置本地重定位运行时的安装，可在更新脚本中加 `-SyncBundledRuntime`：新版注册成功后先静态检查，仅同步不一致文件并复查，再手动启动 Codex。默认不启动应用；运行中的 Codex、缺失源文件或路径异常会阻止同步。
+
+```powershell
+.\scripts\repair-codex-update.ps1 -SyncBundledRuntime
+.\scripts\repair-codex-update.ps1 -Apply -SyncBundledRuntime
+```
+
+需要同时安装相邻的 `codex-windows-bundled-plugin-repair`，且授权须涵盖更新与运行时/相关配置/用户环境同步。Store 更新已经完成时，可先退出 Codex，再预览并授权执行 `scripts/sync-bundled-runtime-before-start.ps1 -Apply`。详见 [恢复流程](references/recovery.md)。浏览器连接仍须启动后在新会话验收。
+
 Codex Windows Update Repair 是一个用于诊断和修复 Windows 上 Codex 桌面版更新卡住问题的开源 Skill，重点处理“点击更新后应用关闭，但版本没有变化”这类 Microsoft Store/MSIX 注册故障。
 Codex Windows Update Repair is an open-source skill for diagnosing and repairing stuck Codex desktop updates on Windows, especially Microsoft Store/MSIX registration failures where the app closes but the installed version does not change.
 

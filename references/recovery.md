@@ -29,6 +29,28 @@ Read this reference before changing package registration or recommending Store r
 
 ## What the repair does
 
+### Optional pre-start runtime synchronization
+
+Install `codex-windows-bundled-plugin-repair` beside this skill. Preview and apply the combined workflow:
+
+```powershell
+.\scripts\repair-codex-update.ps1 -SyncBundledRuntime
+.\scripts\repair-codex-update.ps1 -Apply -SyncBundledRuntime
+```
+
+Use `-BundledRepairScript "<bundled-skill>\scripts\Repair-CodexBundledPlugins.ps1"` if the skills are not siblings. A missing dependency aborts before package registration. The apply confirmation includes backup and synchronization of runtime files and related configuration/user environment entries; obtain explicit authorization for that full scope.
+
+After the registered version advances, the script inspects without launching Codex CLI or Desktop, synchronizes only actionable drift when relocated runtimes are already configured, and repeats inspection before suggesting manual startup. It does not materialize plugins, reset caches, change marketplace paths, or enable an unused relocated runtime. Missing AppX sources, version changes, path mismatches, or an unexpectedly running Codex abort the gate. Do not start Codex until the failure is reviewed. Keep backups from the bundled helper.
+
+For a Store/manual update already completed, fully close Codex and use the standalone gate (preview first, apply only after runtime/config/environment authorization):
+
+```powershell
+.\scripts\sync-bundled-runtime-before-start.ps1
+.\scripts\sync-bundled-runtime-before-start.ps1 -Apply
+```
+
+This standalone command does not require a further version advance. Existing materialized plugin caches may remain old until startup; actual Browser/Chrome and fresh-task capability checks still happen after reopening. If registration did not advance, the combined script does not synchronize or retry automatically.
+
 The script stops only `ChatGPT.exe` processes whose executable path belongs to the `OpenAI.Codex_*` WindowsApps package. It then asks Windows to register the highest staged package for the current user by package family name.
 
 The script does not remove the existing package, reset application data, delete `<CODEX_HOME>`, or start Codex automatically.
