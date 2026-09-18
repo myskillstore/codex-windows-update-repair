@@ -9,6 +9,10 @@ Diagnose the Windows Codex desktop package before changing it, distinguish updat
 
 ## Required workflow
 
+- Manual update scripts must check and report the current administrator token. When packaged-service registration is known to require elevation, use `-RequireAdministrator` so a non-elevated apply stops before closing Codex. This precheck does not guarantee deployment success or make routine plugin repair require elevation.
+
+- Distinguish packaged-service error `0x80073D28` (possibly wrapped in `0x80073CF6`) from package-in-use errors. When deployment evidence requires administrator privileges for `windows.service`, read the recovery reference and hand off one elevated retry under the same Windows account. Do not self-elevate or infer that app reopening caused the failure.
+
 1. Start read-only. Record the installed `OpenAI.Codex` AppX version, active package processes, recent Codex updater lines, Crashpad report timestamps, and relevant Microsoft Store/AppX deployment events. Prefer `scripts/diagnose-codex-update.ps1` when available.
 2. Establish a timeline. Do not call an update-triggered shutdown a crash unless Crashpad or Windows events support that conclusion. Do not treat `winget upgrade` reporting no update as authoritative when the Store product version is `Unknown` or inventory matching fails.
 3. Classify the failure before proposing a repair. Common evidence includes a newer package being staged, `RegisterByPackageFamilyName` failing with `0x80070005`, or an event saying the Codex app must be closed.

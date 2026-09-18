@@ -57,6 +57,10 @@ The script does not remove the existing package, reset application data, delete 
 
 ## Failure handling
 
+- The repair helper reports whether its current token is elevated. For a known packaged-service elevation requirement, run the preview with `-RequireAdministrator -SyncBundledRuntime`, then authorize `-Apply -RequireAdministrator -SyncBundledRuntime` in a standalone elevated terminal under the same Windows account. The required-token check runs before process shutdown and registration. It does not automatically discover every staged manifest requirement, self-elevate, or guarantee that other deployment errors cannot occur.
+
+- If the detailed deployment error is `0x80073D28` and says administrator privileges are required to install a packaged service (`windows.service`), request one user-authorized retry from a standalone terminal opened as Administrator under the same Windows account. A wrapper error `0x80073CF6` alone is insufficient for this classification. Do not automatically elevate or run as a different administrator account: package registration and user environment synchronization are user-specific. Retain the apply confirmation and pre-start runtime gate. If termination succeeded before this error, app reopening is not evidence that running processes caused this attempt to fail. Stop if the elevated retry fails and preserve its detailed deployment error.
+
 - If the script detects that it is running under Codex, it stops before changing anything. Re-run it from a standalone terminal.
 - If package registration still reports that Codex must close, use Task Manager to confirm no package-owned `ChatGPT.exe` remains, then make one more user-authorized attempt.
 - If registration returns Access Denied without a package-in-use message, retry once from a standalone PowerShell opened as Administrator.

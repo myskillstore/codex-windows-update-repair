@@ -1,6 +1,7 @@
 [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
 param(
     [switch]$Apply,
+    [switch]$RequireAdministrator,
     [switch]$SyncBundledRuntime,
     [string]$BundledRepairScript,
 
@@ -11,6 +12,12 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+$isAdministrator = ([Security.Principal.WindowsPrincipal]([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+Write-Host "Administrator privileges: $isAdministrator"
+if ($Apply -and $RequireAdministrator -and -not $isAdministrator) {
+    throw 'Repair aborted before stopping Codex: packaged-service registration requires Administrator. Open a standalone terminal as Administrator under the same Windows account and retry once. No automatic elevation was attempted.'
+}
 
 if ([string]::IsNullOrWhiteSpace($BundledRepairScript)) {
     $BundledRepairScript = Join-Path $PSScriptRoot '..\..\codex-windows-bundled-plugin-repair\scripts\Repair-CodexBundledPlugins.ps1'
